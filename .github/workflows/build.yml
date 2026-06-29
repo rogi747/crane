@@ -43,7 +43,13 @@ jobs:
           DEB=$(ls packages/*.deb | head -n1)
           echo "Found package: $DEB"
           WORK=$(mktemp -d)
-          dpkg-deb -x "$DEB" "$WORK"
+          DEB_ABS="$(cd "$(dirname "$DEB")" && pwd)/$(basename "$DEB")"
+          # macOS runners lack dpkg-deb. A .deb is an `ar` archive containing
+          # data.tar.{gz,xz,lzma}; extract with ar + tar instead.
+          ( cd "$WORK" && ar x "$DEB_ABS" )
+          DATA_TAR=$(ls "$WORK"/data.tar.* | head -n1)
+          echo "Data archive: $DATA_TAR"
+          tar -xf "$DATA_TAR" -C "$WORK"
           APPDIR=$(find "$WORK" -name '*.app' -type d | head -n1)
           if [ -z "$APPDIR" ]; then echo 'No .app found in package'; exit 1; fi
           mkdir -p "$WORK/Payload"
