@@ -19,6 +19,7 @@ static NSString *const kSpikeTestContainerName = @"__crane_spike_test";
 
 @interface SpikeViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic, strong) UITextView *logView;
+@property (nonatomic, strong) NSArray<CRAppInfo *> *pickerApps;
 @end
 
 @implementation SpikeViewController
@@ -116,7 +117,7 @@ static NSString *const kSpikeTestContainerName = @"__crane_spike_test";
     picker.title = @"Pick target app (dry-run)";
     picker.tableView.dataSource = self;
     picker.tableView.delegate = self;
-    objc_setAssociatedObject(self, @selector(showAppPicker), [MappingResolver installedUserApps], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.pickerApps = [MappingResolver installedUserApps];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:picker];
     picker.navigationItem.leftBarButtonItem =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
@@ -127,10 +128,6 @@ static NSString *const kSpikeTestContainerName = @"__crane_spike_test";
 
 - (void)dismissPicker {
     [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (NSArray<CRAppInfo *> *)pickerApps {
-    return objc_getAssociatedObject(self, @selector(showAppPicker));
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
