@@ -12,6 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install ldid
+        run: |
+          set -e
+          brew install ldid
+          ldid -V || true
+
       - name: Install Theos (manual, no auto SDK fetch)
         run: |
           set -e
