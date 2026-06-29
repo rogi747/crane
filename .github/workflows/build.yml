@@ -1,0 +1,46 @@
+name: Build CraneManager (.tipa)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Theos
+        run: |
+          export THEOS=$HOME/theos
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+
+      - name: Build package
+        run: |
+          export THEOS=$HOME/theos
+          make package FINALPACKAGE=1
+
+      - name: Convert .deb to .tipa
+        run: |
+          set -e
+          mkdir -p out
+          DEB=$(ls packages/*.deb | head -n1)
+          echo "Found package: $DEB"
+          WORK=$(mktemp -d)
+          dpkg-deb -x "$DEB" "$WORK"
+          APPDIR=$(find "$WORK" -name '*.app' -type d | head -n1)
+          if [ -z "$APPDIR" ]; then echo 'No .app found in package'; exit 1; fi
+          mkdir -p "$WORK/Payload"
+          cp -R "$APPDIR" "$WORK/Payload/"
+          ( cd "$WORK" && zip -qr CraneManager.tipa Payload )
+          cp "$WORK/CraneManager.tipa" out/
+          echo "Built out/CraneManager.tipa"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CraneManager-tipa
+          path: out/CraneManager.tipa

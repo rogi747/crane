@@ -1,0 +1,8 @@
+Package: com.crane.manager
+Name: CraneManager
+Version: 0.0.1
+Architecture: iphoneos-arm64
+Description: Per-app multi-container manager for TrollStore (data + cookie isolation).
+Maintainer: crane
+Author: crane
+Section: Utilities
