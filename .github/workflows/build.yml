@@ -12,11 +12,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Theos
+      - name: Install Theos (manual, no auto SDK fetch)
         run: |
+          set -e
           export THEOS=$HOME/theos
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+          git clone --recursive https://github.com/theos/theos.git "$THEOS"
+          # Clone the patched SDKs via git (shallow) instead of the interactive
+          # installer, which calls api.github.com and gets rate-limited on CI.
+          git clone --depth 1 https://github.com/theos/sdks.git /tmp/theos-sdks
+          mkdir -p "$THEOS/sdks"
+          cp -R /tmp/theos-sdks/*.sdk "$THEOS/sdks/"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+          echo "Installed SDKs:"; ls "$THEOS/sdks"
 
       - name: Build package
         run: |
